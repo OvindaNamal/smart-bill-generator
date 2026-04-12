@@ -307,6 +307,10 @@ const App: React.FC = () => {
             )}
           </div>
         )}
+
+        <div className="app-footer">
+          Powered by Geethanjalee
+        </div>
       </div>
     </ConfigProvider>
   );
