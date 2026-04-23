@@ -3,11 +3,12 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { Button, Upload, Select, Table, ConfigProvider, theme } from "antd";
+import { Button, Upload, Select, Table, ConfigProvider, theme, Tabs } from "antd";
 import { UploadOutlined, FilePdfOutlined, FileZipOutlined, ClearOutlined } from "@ant-design/icons";
+import ManualEntry from "./ManualEntry";
 import "./index.css";
 
-type Item = {
+export type Item = {
   CustomerName: string;
   Subject: string;
   Item: string;
@@ -159,8 +160,9 @@ const App: React.FC = () => {
     pdf.setFontSize(9);
     for (let page = 1; page <= pageCount; page += 1) {
       pdf.setPage(page);
-      pdf.text(`page ${page} of ${pageCount}`, pageWidth / 2, footerY, {
-        align: "center",
+      pdf.text("Geethanjalee Bookshop", 10, footerY);
+      pdf.text(`page ${page} of ${pageCount}`, pageWidth - 10, footerY, {
+        align: "right",
       });
     }
 
@@ -206,6 +208,11 @@ const App: React.FC = () => {
     0
   );
 
+  const handleManualGenerate = (customerName: string, items: Item[]) => {
+    const pdf = generatePDF(customerName, items);
+    pdf.save(`${customerName}.pdf`);
+  };
+
   return (
     <ConfigProvider
       theme={{
@@ -220,93 +227,112 @@ const App: React.FC = () => {
       <div className="app-container">
         <div className="app-header">
           <h1>🧾 Smart Bill Generator</h1>
-          <p>Generate styled PDF bills quickly from your Excel data.</p>
+          <p>Generate styled PDF bills quickly from your Excel data or manual entry.</p>
         </div>
 
-        <div className="controls-section">
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            {/* Upload */}
-            <Upload beforeUpload={handleUpload} showUploadList={false} accept=".xlsx, .xls">
-              <Button size="large" type="primary" icon={<UploadOutlined />}>
-                Upload Excel Data
-              </Button>
-            </Upload>
+        <Tabs
+          defaultActiveKey="1"
+          centered
+          items={[
+            {
+              key: '1',
+              label: 'From Excel',
+              children: (
+                <>
+                  <div className="controls-section">
+                    <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                      {/* Upload */}
+                      <Upload beforeUpload={handleUpload} showUploadList={false} accept=".xlsx, .xls">
+                        <Button size="large" type="primary" icon={<UploadOutlined />}>
+                          Upload Excel Data
+                        </Button>
+                      </Upload>
 
-            {/* Reset */}
-            {Object.keys(groupedData).length > 0 && (
-              <Button 
-                size="large" 
-                danger 
-                icon={<ClearOutlined />} 
-                onClick={() => {
-                  setGroupedData({});
-                  setSelectedCustomer("");
-                }}
-              >
-                Clear Data
-              </Button>
-            )}
-          </div>
+                      {/* Reset */}
+                      {Object.keys(groupedData).length > 0 && (
+                        <Button
+                          size="large"
+                          danger
+                          icon={<ClearOutlined />}
+                          onClick={() => {
+                            setGroupedData({});
+                            setSelectedCustomer("");
+                          }}
+                        >
+                          Clear Data
+                        </Button>
+                      )}
+                    </div>
 
-          {/* Customer Select */}
-          {Object.keys(groupedData).length > 0 && (
-            <Select
-              size="large"
-              placeholder="Select a Customer"
-              style={{ width: 250 }}
-              onChange={(value) => setSelectedCustomer(value)}
-              value={selectedCustomer || undefined}
-            >
-              {Object.keys(groupedData).map((customer) => (
-                <Option key={customer} value={customer}>
-                  {customer}
-                </Option>
-              ))}
-            </Select>
-          )}
-        </div>
+                    {/* Customer Select */}
+                    {Object.keys(groupedData).length > 0 && (
+                      <Select
+                        size="large"
+                        placeholder="Select a Customer"
+                        style={{ width: 250 }}
+                        onChange={(value) => setSelectedCustomer(value)}
+                        value={selectedCustomer || undefined}
+                      >
+                        {Object.keys(groupedData).map((customer) => (
+                          <Option key={customer} value={customer}>
+                            {customer}
+                          </Option>
+                        ))}
+                      </Select>
+                    )}
+                  </div>
 
-        {/* Table */}
-        {selectedCustomer && (
-          <div className="table-container">
-            <Table
-              dataSource={selectedItems}
-              columns={columns}
-              rowKey={(_, index) => index!.toString()}
-              pagination={false}
-              bordered={false}
-            />
-            <div className="total-amount">
-              Total Amount: Rs. {formatCurrency(totalAmount)}
-            </div>
-          </div>
-        )}
+                  {/* Table */}
+                  {selectedCustomer && (
+                    <div className="table-container">
+                      <Table
+                        dataSource={selectedItems}
+                        columns={columns}
+                        rowKey={(_, index) => index!.toString()}
+                        pagination={false}
+                        bordered={false}
+                      />
+                      <div className="total-amount">
+                        Total Amount: Rs. {formatCurrency(totalAmount)}
+                      </div>
+                    </div>
+                  )}
 
-        {/* Actions */}
-        {(selectedCustomer || Object.keys(groupedData).length > 0) && (
-          <div className="action-buttons">
-            {selectedCustomer && (
-              <Button
-                size="large"
-                type="primary"
-                icon={<FilePdfOutlined />}
-                onClick={() =>
-                  generatePDF(selectedCustomer, selectedItems).save(
-                    `${selectedCustomer}.pdf`
-                  )
-                }
-              >
-                Download PDF
-              </Button>
-            )}
+                  {/* Actions */}
+                  {(selectedCustomer || Object.keys(groupedData).length > 0) && (
+                    <div className="action-buttons">
+                      {selectedCustomer && (
+                        <Button
+                          size="large"
+                          type="primary"
+                          icon={<FilePdfOutlined />}
+                          onClick={() =>
+                            generatePDF(selectedCustomer, selectedItems).save(
+                              `${selectedCustomer}.pdf`
+                            )
+                          }
+                        >
+                          Download PDF
+                        </Button>
+                      )}
 
-            {Object.keys(groupedData).length > 0 && (
-              <Button size="large" type="primary" danger icon={<FileZipOutlined />} onClick={downloadZIP}>
-                Download All as ZIP
-              </Button>
-            )}
-          </div>
-        )}
+                      {Object.keys(groupedData).length > 0 && (
+                        <Button size="large" type="primary" danger icon={<FileZipOutlined />} onClick={downloadZIP}>
+                          Download All as ZIP
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </>
+              )
+            },
+            {
+              key: '2',
+              label: 'Manual Entry',
+              children: <ManualEntry onGenerate={handleManualGenerate} />
+            }
+          ]}
+        />
 
         <div className="app-footer">
           Powered by Geethanjalee
