@@ -4,8 +4,9 @@ import jsPDF from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { Button, Upload, Select, Table, ConfigProvider, theme, Tabs } from "antd";
-import { UploadOutlined, FilePdfOutlined, FileZipOutlined, ClearOutlined } from "@ant-design/icons";
+import { UploadOutlined, FilePdfOutlined, FileZipOutlined, ClearOutlined, DownloadOutlined } from "@ant-design/icons";
 import ManualEntry from "./ManualEntry";
+import ExamBill from "./ExamBill";
 import "./index.css";
 
 export type Item = {
@@ -213,6 +214,17 @@ const App: React.FC = () => {
     pdf.save(`${customerName}.pdf`);
   };
 
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { CustomerName: "John Doe", Subject: "Mathematics", Item: "Textbook", Quantity: 2, Rate: 500 },
+      { CustomerName: "John Doe", Subject: "Mathematics", Item: "Notebook", Quantity: 5, Rate: 100 },
+      { CustomerName: "Jane Smith", Subject: "Science", Item: "Lab Coat", Quantity: 1, Rate: 1200 }
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "Standard_Bill_Template.xlsx");
+  };
+
   return (
     <ConfigProvider
       theme={{
@@ -247,6 +259,11 @@ const App: React.FC = () => {
                           Upload Excel Data
                         </Button>
                       </Upload>
+
+                      {/* Download Template */}
+                      <Button size="large" icon={<DownloadOutlined />} onClick={downloadTemplate}>
+                        Download Template
+                      </Button>
 
                       {/* Reset */}
                       {Object.keys(groupedData).length > 0 && (
@@ -330,6 +347,11 @@ const App: React.FC = () => {
               key: '2',
               label: 'Manual Entry',
               children: <ManualEntry onGenerate={handleManualGenerate} />
+            },
+            {
+              key: '3',
+              label: 'Exam Bill',
+              children: <ExamBill />
             }
           ]}
         />
