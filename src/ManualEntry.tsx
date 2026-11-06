@@ -1,17 +1,19 @@
 import React from 'react';
-import { Form, Input, InputNumber, Space, Button } from "antd";
+import { Form, Input, InputNumber, Space, Button, DatePicker } from "antd";
 import { PlusOutlined, MinusCircleOutlined, FilePdfOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 import type { Item } from './types';
 
 interface ManualEntryProps {
-  onGenerate: (customerName: string, items: Item[]) => void;
+  onGenerate: (customerName: string, items: Item[], billDate?: string) => void;
 }
 
 const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
   const [form] = Form.useForm();
 
   const handleManualGenerate = (values: any) => {
-    const { CustomerName, Subject, items } = values;
+    const { CustomerName, Subject, items, BillDate } = values;
+    const formattedDate = BillDate ? dayjs(BillDate).format("DD MMMM YYYY") : dayjs().format("DD MMMM YYYY");
     const formattedItems: Item[] = (items || []).map((item: any) => ({
       CustomerName,
       Subject,
@@ -20,7 +22,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
       Rate: item.Rate || 0,
     }));
     
-    onGenerate(CustomerName || 'Manual Invoice', formattedItems);
+    onGenerate(CustomerName || 'Manual Invoice', formattedItems, formattedDate);
   };
 
   const [totalAmount, setTotalAmount] = React.useState(0);
@@ -39,14 +41,35 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
 
   return (
     <div style={{ maxWidth: 800, margin: '2rem auto', background: '#fff', padding: '2rem', borderRadius: 8, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-      <Form form={form} layout="vertical" onFinish={handleManualGenerate} onValuesChange={handleValuesChange}>
-        <Form.Item
-          label="Customer Name"
-          name="CustomerName"
-          rules={[{ required: true, message: 'Please enter customer name' }]}
-        >
-          <Input placeholder="Enter customer name" size="large" />
-        </Form.Item>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ BillDate: dayjs() }}
+        onFinish={handleManualGenerate}
+        onValuesChange={handleValuesChange}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+          <Form.Item
+            label="Customer Name"
+            name="CustomerName"
+            rules={[{ required: true, message: 'Please enter customer name' }]}
+          >
+            <Input placeholder="Enter customer name" size="large" />
+          </Form.Item>
+          <Form.Item
+            label="Bill Date"
+            name="BillDate"
+            rules={[{ required: true, message: 'Please select bill date' }]}
+          >
+            <DatePicker
+              size="large"
+              format="DD MMMM YYYY"
+              placeholder="Select bill date"
+              style={{ width: '100%' }}
+              allowClear={false}
+            />
+          </Form.Item>
+        </div>
         <Form.Item
           label="Subject"
           name="Subject"

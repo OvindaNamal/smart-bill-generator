@@ -3,8 +3,9 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
-import { Button, Upload, Select, Table, message } from "antd";
+import { Button, Upload, Select, Table, message, DatePicker } from "antd";
 import { UploadOutlined, FilePdfOutlined, FileZipOutlined, ClearOutlined, DownloadOutlined } from "@ant-design/icons";
+import dayjs, { Dayjs } from "dayjs";
 import type { Item } from "./types";
 import "./index.css";
 
@@ -14,6 +15,7 @@ const ExamBill: React.FC = () => {
   const [groupedData, setGroupedData] = useState<any>({});
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [subjectTitle, setSubjectTitle] = useState<string>("");
+  const [billDate, setBillDate] = useState<Dayjs | null>(dayjs());
 
   // Currency Format
   const formatCurrency = (value: number) => {
@@ -100,7 +102,7 @@ const ExamBill: React.FC = () => {
   };
 
   // Generate Single PDF
-  const generatePDF = (customer: string, items: Item[]) => {
+  const generatePDF = (customer: string, items: Item[], customDate?: string) => {
     const pdf = new jsPDF({
       unit: "mm",
       format: "a5",
@@ -108,7 +110,7 @@ const ExamBill: React.FC = () => {
     });
 
     const invoiceNo = `EXB-${Date.now()}`;
-    const date = new Date().toLocaleDateString();
+    const date = customDate || (billDate ? billDate.format("DD MMMM YYYY") : dayjs().format("DD MMMM YYYY"));
 
     let y = 50;
 
@@ -116,7 +118,7 @@ const ExamBill: React.FC = () => {
     pdf.setFontSize(10);
     pdf.text("Invoice No:", 10, y);
     pdf.text(invoiceNo, 30, y);
-    pdf.text(`Date: ${date}`, 110, y);
+    pdf.text(`Date: ${date}`, 138, y, { align: "right" });
     y += 6;
 
     pdf.text("Customer :", 10, y);
@@ -204,7 +206,7 @@ const ExamBill: React.FC = () => {
     pdf.setFontSize(9);
     for (let page = 1; page <= pageCount; page += 1) {
       pdf.setPage(page);
-      pdf.text("Geethanjalee Bookshop", 10, footerY);
+      // pdf.text("Geethanjalee Bookshop", 10, footerY);
       pdf.text(`page ${page} of ${pageCount}`, pageWidth - 10, footerY, {
         align: "right",
       });
@@ -216,9 +218,10 @@ const ExamBill: React.FC = () => {
   // Generate ZIP with PDFs
   const downloadZIP = async () => {
     const zip = new JSZip();
+    const formattedDate = billDate ? billDate.format("DD MMMM YYYY") : dayjs().format("DD MMMM YYYY");
 
     for (const customer in groupedData) {
-      const pdf = generatePDF(customer, groupedData[customer]);
+      const pdf = generatePDF(customer, groupedData[customer], formattedDate);
       const blob = pdf.output("blob");
 
       zip.file(`${customer}_ExamBill.pdf`, blob);
@@ -272,12 +275,22 @@ const ExamBill: React.FC = () => {
   return (
     <div style={{ marginTop: '1rem' }}>
       <div className="controls-section">
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <Upload beforeUpload={handleUpload} showUploadList={false} accept=".xlsx, .xls">
             <Button size="large" type="primary" icon={<UploadOutlined />}>
               Upload Exam Excel
             </Button>
           </Upload>
+
+          <DatePicker
+            size="large"
+            value={billDate}
+            onChange={(date) => setBillDate(date || dayjs())}
+            format="DD MMMM YYYY"
+            placeholder="Select Bill Date"
+            allowClear={false}
+            style={{ minWidth: 190 }}
+          />
 
           <Button size="large" icon={<DownloadOutlined />} onClick={downloadTemplate}>
             Download Template
