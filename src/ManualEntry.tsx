@@ -1,18 +1,21 @@
 import React from 'react';
-import { Form, Input, InputNumber, Space, Button, DatePicker } from "antd";
+import { Form, Input, InputNumber, Space, Button, DatePicker, Select } from "antd";
 import { PlusOutlined, MinusCircleOutlined, FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import type { Item } from './types';
+import type { Item, Letterhead } from './types';
+import geethanjaleePreview from "./assets/01.geethanjalee.png";
+import sandaminiPreview from "./assets/02.sandamini.png";
 
 interface ManualEntryProps {
-  onGenerate: (customerName: string, items: Item[], billDate?: string) => void;
+  onGenerate: (customerName: string, items: Item[], billDate?: string, letterhead?: Letterhead) => void;
 }
 
 const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
   const [form] = Form.useForm();
+  const selectedLetterhead = Form.useWatch('letterhead', form) || 'geethanjalee';
 
   const handleManualGenerate = (values: any) => {
-    const { CustomerName, Subject, items, BillDate } = values;
+    const { CustomerName, Subject, items, BillDate, letterhead } = values;
     const formattedDate = BillDate ? dayjs(BillDate).format("DD MMMM YYYY") : dayjs().format("DD MMMM YYYY");
     const formattedItems: Item[] = (items || []).map((item: any) => ({
       CustomerName,
@@ -22,7 +25,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
       Rate: item.Rate || 0,
     }));
     
-    onGenerate(CustomerName || 'Manual Invoice', formattedItems, formattedDate);
+    onGenerate(CustomerName || 'Manual Invoice', formattedItems, formattedDate, letterhead || 'geethanjalee');
   };
 
   const [totalAmount, setTotalAmount] = React.useState(0);
@@ -44,7 +47,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
       <Form
         form={form}
         layout="vertical"
-        initialValues={{ BillDate: dayjs() }}
+        initialValues={{ BillDate: dayjs(), letterhead: 'geethanjalee' }}
         onFinish={handleManualGenerate}
         onValuesChange={handleValuesChange}
       >
@@ -70,13 +73,43 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
             />
           </Form.Item>
         </div>
-        <Form.Item
-          label="Subject"
-          name="Subject"
-          rules={[{ required: false }]}
-        >
-          <Input placeholder="Enter subject (optional)" size="large" />
-        </Form.Item>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>
+          <Form.Item
+            label="Subject"
+            name="Subject"
+            rules={[{ required: false }]}
+          >
+            <Input placeholder="Enter subject (optional)" size="large" />
+          </Form.Item>
+          <Form.Item
+            label="Letterhead"
+            name="letterhead"
+            rules={[{ required: true, message: 'Please select a letterhead' }]}
+          >
+            <Select size="large" placeholder="Select Letterhead">
+              <Select.Option value="geethanjalee">Geethanjalee</Select.Option>
+              <Select.Option value="sandamini">Sandamini</Select.Option>
+              <Select.Option value="none">None of heading</Select.Option>
+            </Select>
+          </Form.Item>
+        </div>
+
+        {/* Letterhead Preview */}
+        {selectedLetterhead !== 'none' && (
+          <div style={{ marginBottom: '.25rem', padding: '0.75rem', background: '#fafafa', borderRadius: 8, border: '1px dashed #d9d9d9', textAlign: 'center' }}>
+            <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: 6 }}>Letterhead Preview:</div>
+            <img
+              src={selectedLetterhead === 'geethanjalee' ? geethanjaleePreview : sandaminiPreview}
+              alt="Letterhead Preview"
+              style={{ maxHeight: 48, maxWidth: '100%', objectFit: 'contain' }}
+            />
+          </div>
+        )}
+        {selectedLetterhead === 'none' && (
+          <div style={{ marginBottom: '1.25rem', padding: '0.6rem 0.75rem', background: '#f5f5f5', borderRadius: 8, color: '#888', fontSize: '0.85rem' }}>
+            ℹ️ <strong>None of heading</strong> selected: The bill will be generated without a letterhead (suitable for pre-printed letterhead paper).
+          </div>
+        )}
 
         <div style={{ marginBottom: 16 }}>
           <h3>Items</h3>

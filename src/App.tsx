@@ -8,15 +8,9 @@ import { UploadOutlined, FilePdfOutlined, FileZipOutlined, ClearOutlined, Downlo
 import dayjs, { Dayjs } from "dayjs";
 import ManualEntry from "./ManualEntry";
 import ExamBill from "./ExamBill";
+import type { Item, Letterhead } from "./types";
+import { GEETHANJALEE_LETTERHEAD, SANDAMINI_LETTERHEAD } from "./assets/letterheadData";
 import "./index.css";
-
-export type Item = {
-  CustomerName: string;
-  Subject: string;
-  Item: string;
-  Quantity: number;
-  Rate: number;
-};
 
 const { Option } = Select;
 
@@ -59,12 +53,25 @@ const App: React.FC = () => {
   };
 
   // Generate Single PDF
-  const generatePDF = (customer: string, items: Item[], customDate?: string) => {
+  const generatePDF = (
+    customer: string,
+    items: Item[],
+    customDate?: string,
+    letterhead: Letterhead = "none"
+  ) => {
     const pdf = new jsPDF({
       unit: "mm",
       format: "a5",
       orientation: "portrait",
+      compress: true,
     });
+
+    // Add letterhead if selected
+    if (letterhead === "geethanjalee") {
+      pdf.addImage(GEETHANJALEE_LETTERHEAD, "PNG", 10, 6, 128, 37, undefined, "FAST");
+    } else if (letterhead === "sandamini") {
+      pdf.addImage(SANDAMINI_LETTERHEAD, "PNG", 10, 6, 128, 37, undefined, "FAST");
+    }
 
     const invoiceNo = `INV-${Date.now()}`;
     const date = customDate || (billDate ? billDate.format("DD MMMM YYYY") : dayjs().format("DD MMMM YYYY"));
@@ -163,7 +170,11 @@ const App: React.FC = () => {
     pdf.setFontSize(9);
     for (let page = 1; page <= pageCount; page += 1) {
       pdf.setPage(page);
-      // pdf.text("Geethanjalee Bookshop", 10, footerY);
+      if (letterhead === "geethanjalee") {
+        pdf.text("Geethanjalee Bookshop", 10, footerY);
+      } else if (letterhead === "sandamini") {
+        pdf.text("Sandamini Bookshop", 10, footerY);
+      }
       pdf.text(`page ${page} of ${pageCount}`, pageWidth - 10, footerY, {
         align: "right",
       });
@@ -212,8 +223,13 @@ const App: React.FC = () => {
     0
   );
 
-  const handleManualGenerate = (customerName: string, items: Item[], customDate?: string) => {
-    const pdf = generatePDF(customerName, items, customDate);
+  const handleManualGenerate = (
+    customerName: string,
+    items: Item[],
+    customDate?: string,
+    letterhead: Letterhead = "none"
+  ) => {
+    const pdf = generatePDF(customerName, items, customDate, letterhead);
     pdf.save(`${customerName}.pdf`);
   };
 

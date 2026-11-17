@@ -5,3 +5,5 @@ export type Item = {
   Quantity: number;
   Rate: number;
 };
+
+export type Letterhead = 'geethanjalee' | 'sandamini' | 'none';
