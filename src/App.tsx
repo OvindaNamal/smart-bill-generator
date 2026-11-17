@@ -9,7 +9,7 @@ import dayjs, { Dayjs } from "dayjs";
 import ManualEntry from "./ManualEntry";
 import ExamBill from "./ExamBill";
 import type { Item, Letterhead } from "./types";
-import { GEETHANJALEE_LETTERHEAD, SANDAMINI_LETTERHEAD } from "./assets/letterheadData";
+import { GEETHANJALEE_LETTERHEAD, SANDAMINI_LETTERHEAD, LETTERHEAD_CONFIG } from "./assets/letterheadData";
 import "./index.css";
 
 const { Option } = Select;
@@ -68,9 +68,11 @@ const App: React.FC = () => {
 
     // Add letterhead if selected
     if (letterhead === "geethanjalee") {
-      pdf.addImage(GEETHANJALEE_LETTERHEAD, "PNG", 10, 6, 128, 37, undefined, "FAST");
+      const cfg = LETTERHEAD_CONFIG.geethanjalee;
+      pdf.addImage(GEETHANJALEE_LETTERHEAD, "PNG", cfg.x, cfg.y, cfg.width, cfg.height, undefined, "FAST");
     } else if (letterhead === "sandamini") {
-      pdf.addImage(SANDAMINI_LETTERHEAD, "PNG", 10, 6, 128, 37, undefined, "FAST");
+      const cfg = LETTERHEAD_CONFIG.sandamini;
+      pdf.addImage(SANDAMINI_LETTERHEAD, "PNG", cfg.x, cfg.y, cfg.width, cfg.height, undefined, "FAST");
     }
 
     const invoiceNo = `INV-${Date.now()}`;

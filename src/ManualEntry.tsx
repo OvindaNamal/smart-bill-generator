@@ -95,7 +95,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
         </div>
 
         {/* Letterhead Preview */}
-        {selectedLetterhead !== 'none' && (
+        {/* {selectedLetterhead !== 'none' && (
           <div style={{ marginBottom: '.25rem', padding: '0.75rem', background: '#fafafa', borderRadius: 8, border: '1px dashed #d9d9d9', textAlign: 'center' }}>
             <div style={{ fontSize: '0.85rem', color: '#888', marginBottom: 6 }}>Letterhead Preview:</div>
             <img
@@ -104,7 +104,7 @@ const ManualEntry: React.FC<ManualEntryProps> = ({ onGenerate }) => {
               style={{ maxHeight: 48, maxWidth: '100%', objectFit: 'contain' }}
             />
           </div>
-        )}
+        )} */}
         {selectedLetterhead === 'none' && (
           <div style={{ marginBottom: '1.25rem', padding: '0.6rem 0.75rem', background: '#f5f5f5', borderRadius: 8, color: '#888', fontSize: '0.85rem' }}>
             ℹ️ <strong>None of heading</strong> selected: The bill will be generated without a letterhead (suitable for pre-printed letterhead paper).
