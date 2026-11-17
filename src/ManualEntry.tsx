@@ -3,8 +3,6 @@ import { Form, Input, InputNumber, Space, Button, DatePicker, Select } from "ant
 import { PlusOutlined, MinusCircleOutlined, FilePdfOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import type { Item, Letterhead } from './types';
-import geethanjaleePreview from "./assets/01.geethanjalee.png";
-import sandaminiPreview from "./assets/02.sandamini.png";
 
 interface ManualEntryProps {
   onGenerate: (customerName: string, items: Item[], billDate?: string, letterhead?: Letterhead) => void;
